@@ -5,9 +5,7 @@ import {
   Waves,
   Zap,
   Shield,
-  Wallet,
   ArrowRight,
-  ExternalLink,
   ChevronRight,
   Activity,
   Menu,
@@ -18,6 +16,9 @@ import {
   Filter,
   Eye,
   EyeOff,
+  User,
+  TrendingUp,
+  Key,
 } from "lucide-react";
 
 /* ─── palette ─── */
@@ -137,6 +138,11 @@ function GlobalStyles(): React.JSX.Element {
         50% { filter: drop-shadow(0 0 14px rgba(251,191,36,0.7)); }
       }
 
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(0,229,204,0.2); border-radius: 3px; }
@@ -212,21 +218,21 @@ function Header({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const navLinks = ["Home", "The Bot", "Whales", "Pricing", "How It Works"];
+  // ── Exact nav links as specified ──
+  const navLinks = ["The Bot", "Whales", "Pricing", "How It Works"];
 
   const getLinkHref = (label: string): string => {
-    if (label === "Home")         return "/";
+    if (label === "The Bot")      return "/#the-bot";
     if (label === "Whales")       return "/whales";
     if (label === "Pricing")      return "/pricing";
-    if (label === "The Bot")      return "/#the-bot";
-    if (label === "How It Works") return "/how-it-works";
+    if (label === "How It Works") return "/how-it-works"; // absolute routing fix
     return "#";
   };
 
   const socialsLinks = [
-    { label: "Discord",    href: "#", icon: "💬" },
-    { label: "Telegram",   href: "#", icon: "✈️" },
-    { label: "X (Twitter)", href: "#", icon: "𝕏" },
+    { label: "Discord",   href: "#", icon: "💬" },
+    { label: "Telegram",  href: "#", icon: "✈️" },
+    { label: "X",         href: "#", icon: "𝕏" },
   ];
 
   /* Shared link style */
@@ -331,7 +337,7 @@ function Header({
               />
             </button>
 
-            {/* Dropdown panel */}
+            {/* Glassmorphism Dropdown panel */}
             {socialsOpen && (
               <div
                 style={{
@@ -386,7 +392,7 @@ function Header({
             )}
           </div>
 
-          {/* PRO toggle */}
+          {/* PRO Active / Free Tier developer toggle */}
           <button
             onClick={() => setIsSubscribed(!isSubscribed)}
             style={{
@@ -587,12 +593,12 @@ function DashboardMockup(): React.JSX.Element {
 
       {/* Content area */}
       <div style={{ padding: 20 }}>
-        {/* Stats row */}
+        {/* Stats row — high-roller values */}
         <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
           {[
-            { label: "Portfolio", value: "$142,890", change: "+12.4%", up: true },
-            { label: "Today P&L", value: "+$4,210", change: "+3.1%", up: true },
-            { label: "Win Rate", value: "78.3%", change: "+2.1%", up: true },
+            { label: "Portfolio", value: "$1,842,500", change: "+18.4%", up: true },
+            { label: "Today P&L", value: "+$261,450", change: "+14.2%", up: true },
+            { label: "Win Rate", value: "94.1%", change: "+4.5%", up: true },
           ].map((s, i) => (
             <div
               key={i}
@@ -630,7 +636,7 @@ function DashboardMockup(): React.JSX.Element {
           ))}
         </div>
 
-        {/* Chart area */}
+        {/* Chart area — neon cyan-to-purple gradient */}
         <div style={{ position: "relative", height: 120, marginBottom: 16 }}>
           <svg
             width="100%"
@@ -824,6 +830,7 @@ function Hero(): React.JSX.Element {
             <Zap size={13} /> Live on Polymarket &mdash; Sub-second execution
           </div>
 
+          {/* Headline with gradient text effect */}
           <h1
             className="font-display glow-accent"
             style={{
@@ -835,14 +842,13 @@ function Hero(): React.JSX.Element {
               color: "#fff",
             }}
           >
-            Ride the Waves
-            <br />
-            of{" "}
+            Ride the Waves of{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, #00e5cc, #7c5cfc)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
             >
               Smart Money
@@ -864,6 +870,7 @@ function Hero(): React.JSX.Element {
             non-custodial, purely mathematical.
           </p>
 
+          {/* CTAs: Create Account + See Live Trades */}
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
             <button
               className="btn-shimmer font-display"
@@ -891,7 +898,7 @@ function Hero(): React.JSX.Element {
                 t.style.boxShadow = "none";
               }}
             >
-              <Wallet size={18} /> Connect Wallet
+              <User size={18} /> Create Account
             </button>
 
             <button
@@ -921,7 +928,7 @@ function Hero(): React.JSX.Element {
                 t.style.borderColor = "rgba(0,229,204,0.2)";
               }}
             >
-              Read Docs <ExternalLink size={14} />
+              <TrendingUp size={18} /> See Live Trades
             </button>
           </div>
 
@@ -947,7 +954,7 @@ function Hero(): React.JSX.Element {
           </div>
         </div>
 
-        {/* Right: dashboard */}
+        {/* Right: dashboard mockup */}
         <div style={{ display: "flex", justifyContent: "center" }}>
           <DashboardMockup />
         </div>
@@ -985,24 +992,13 @@ function TradeItem({ t }: { t: Trade }): React.JSX.Element {
         fontSize: 13,
       }}
     >
-      <span
-        style={{
-          color: COLORS.textSecondary,
-          fontFamily: "monospace",
-          fontSize: 12,
-        }}
-      >
+      <span style={{ color: COLORS.textSecondary, fontFamily: "monospace", fontSize: 12 }}>
         {t.wallet}
       </span>
       <span style={{ color: COLORS.textSecondary }}>{t.action}</span>
       <span style={{ color: "#fff", fontWeight: 600 }}>
         {t.amount}{" "}
-        <span
-          style={{
-            color: t.side === "YES" ? COLORS.accent : COLORS.accentPink,
-            fontWeight: 700,
-          }}
-        >
+        <span style={{ color: t.side === "YES" ? COLORS.accent : COLORS.accentPink, fontWeight: 700 }}>
           {t.side}
         </span>
       </span>
@@ -1017,9 +1013,7 @@ function TradeItem({ t }: { t: Trade }): React.JSX.Element {
           fontWeight: 700,
           padding: "2px 8px",
           borderRadius: 4,
-          background: t.positive
-            ? "rgba(0,229,204,0.1)"
-            : "rgba(244,114,182,0.1)",
+          background: t.positive ? "rgba(0,229,204,0.1)" : "rgba(244,114,182,0.1)",
         }}
       >
         +{t.profit}
@@ -1050,10 +1044,7 @@ function Ticker(): React.JSX.Element {
         background: "rgba(0,229,204,0.015)",
       }}
     >
-      <div
-        className="ticker-track"
-        style={{ display: "flex", width: "max-content" }}
-      >
+      <div className="ticker-track" style={{ display: "flex", width: "max-content" }}>
         {[...trades, ...trades].map((t, i) => (
           <TradeItem key={i} t={t} />
         ))}
@@ -1123,21 +1114,21 @@ function Features(): React.JSX.Element {
     {
       icon: <Server size={24} />,
       title: "EU-West 1 Proximity Edge",
-      desc: "Our infrastructure is co-located in EU-West 1 \u2014 the same region as Polymarket\u2019s core exchange. Single-digit millisecond latency gives us an unfair speed advantage over every human trader and most competing bots.",
+      desc: "Our infrastructure is co-located in EU-West 1 — the same region as Polymarket's core exchange. Single-digit millisecond latency gives us an unfair speed advantage over every human trader and most competing bots.",
       gradient: "linear-gradient(135deg, #7c5cfc, #a78bfa)",
       glowClass: "icon-glow-purple",
     },
     {
       icon: <BrainCircuit size={24} />,
       title: "Zero-Emotion Execution",
-      desc: "PolyWhale doesn\u2019t panic-sell, FOMO-buy, or second-guess. Every trade is purely mathematical \u2014 executed by algorithms that replicate whale logic with cold precision and zero cognitive bias.",
+      desc: "PolyWhale doesn't panic-sell, FOMO-buy, or second-guess. Every trade is purely mathematical — executed by algorithms that replicate whale logic with cold precision and zero cognitive bias.",
       gradient: "linear-gradient(135deg, #f472b6, #fb7185)",
       glowClass: "icon-glow-pink",
     },
     {
-      icon: <Shield size={24} />,
+      icon: <Key size={24} />,
       title: "Non-Custodial & Transparent",
-      desc: "Your funds never leave your wallet. PolyWhale executes via delegated smart contract authority on Polygon \u2014 full ownership, full transparency, revoke access with a single click anytime.",
+      desc: "Your funds never leave your wallet. PolyWhale executes via delegated smart contract authority on Polygon — full ownership, full transparency, revoke access with a single click anytime.",
       gradient: "linear-gradient(135deg, #fbbf24, #f59e0b)",
       glowClass: "icon-glow-amber",
     },
@@ -1220,12 +1211,7 @@ function Features(): React.JSX.Element {
               </AnimatedIcon>
               <h3
                 className="font-display"
-                style={{
-                  fontSize: 19,
-                  fontWeight: 700,
-                  color: "#fff",
-                  marginBottom: 10,
-                }}
+                style={{ fontSize: 19, fontWeight: 700, color: "#fff", marginBottom: 10 }}
               >
                 {f.title}
               </h3>
@@ -1250,9 +1236,9 @@ function HowItWorks(): React.JSX.Element {
   const steps = [
     {
       num: "01",
-      icon: <Wallet size={28} />,
-      title: "Connect Your Wallet",
-      desc: "Link your Polygon wallet in one click. No signups, no KYC, no personal data. Your keys stay yours \u2014 PolyWhale operates through non-custodial delegation only.",
+      icon: <User size={28} />,
+      title: "Create Your Account",
+      desc: "Sign up in seconds — no KYC, no personal data required. Connect your Polygon wallet and you're live. Your keys stay yours; PolyWhale operates through non-custodial delegation only.",
       color: COLORS.accent,
       glowClass: "icon-glow-cyan",
     },
@@ -1260,7 +1246,7 @@ function HowItWorks(): React.JSX.Element {
       num: "02",
       icon: <Filter size={28} />,
       title: "Select a Profitable Whale",
-      desc: "Browse our ranked leaderboard of verified Polymarket whales. Filter by win-rate on specific event topics \u2014 Politics, Crypto, Sports, or Finance \u2014 and pick the strategist that matches your thesis.",
+      desc: "Browse our ranked leaderboard of verified Polymarket whales. Filter by win-rate on specific event topics — Politics, Crypto, Sports, or Finance — and pick the strategist that matches your thesis.",
       color: COLORS.accentAlt,
       glowClass: "icon-glow-purple",
     },
@@ -1268,7 +1254,7 @@ function HowItWorks(): React.JSX.Element {
       num: "03",
       icon: <Crosshair size={28} />,
       title: "Auto-Trade at Machine Speed",
-      desc: "Set your allocation and risk limits, then let the bot work. When your whale enters a YES or NO position, PolyWhale mirrors it within milliseconds from our co-located EU-West 1 servers \u2014 faster than any human can type.",
+      desc: "Set your allocation and risk limits, then let the bot work. When your whale enters a YES or NO position, PolyWhale mirrors it within milliseconds from our co-located EU-West 1 servers — faster than any human can type.",
       color: COLORS.accentPink,
       glowClass: "icon-glow-pink",
     },
@@ -1280,8 +1266,7 @@ function HowItWorks(): React.JSX.Element {
       style={{
         padding: "100px 24px",
         position: "relative",
-        background:
-          "linear-gradient(180deg, transparent, rgba(0,229,204,0.02), transparent)",
+        background: "linear-gradient(180deg, transparent, rgba(0,229,204,0.02), transparent)",
       }}
     >
       <div ref={ref} className="reveal" style={{ maxWidth: 1000, margin: "0 auto" }}>
@@ -1314,6 +1299,7 @@ function HowItWorks(): React.JSX.Element {
                 background: "linear-gradient(135deg, #00e5cc, #7c5cfc)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
             >
               Alpha
@@ -1380,38 +1366,21 @@ function HowItWorks(): React.JSX.Element {
                     color: s.color,
                     marginBottom: 20,
                     position: "relative",
-                    transform: isHovered
-                      ? "rotate(-8deg) scale(1.14)"
-                      : "rotate(0deg) scale(1)",
+                    transform: isHovered ? "rotate(-8deg) scale(1.14)" : "rotate(0deg) scale(1)",
                     boxShadow: isHovered ? `0 0 24px ${s.color}35` : "none",
                     animation: isHovered
                       ? `icon-pulse 1.4s ease-in-out infinite, ${s.glowClass} 1.4s ease-in-out infinite`
                       : "none",
-                    transition:
-                      "transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease",
+                    transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease",
                   }}
                 >
                   {s.icon}
                 </div>
 
-                <h3
-                  className="font-display"
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 700,
-                    color: "#fff",
-                    marginBottom: 10,
-                  }}
-                >
+                <h3 className="font-display" style={{ fontSize: 20, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
                   {s.title}
                 </h3>
-                <p
-                  style={{
-                    fontSize: 14,
-                    lineHeight: 1.7,
-                    color: COLORS.textSecondary,
-                  }}
-                >
+                <p style={{ fontSize: 14, lineHeight: 1.7, color: COLORS.textSecondary }}>
                   {s.desc}
                 </p>
 
@@ -1457,8 +1426,7 @@ function CTABanner(): React.JSX.Element {
           borderRadius: 24,
           position: "relative",
           overflow: "hidden",
-          background:
-            "linear-gradient(135deg, rgba(0,229,204,0.08), rgba(124,92,252,0.08))",
+          background: "linear-gradient(135deg, rgba(0,229,204,0.08), rgba(124,92,252,0.08))",
           border: "1px solid rgba(0,229,204,0.12)",
         }}
       >
@@ -1470,8 +1438,7 @@ function CTABanner(): React.JSX.Element {
             width: 400,
             height: 400,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(0,229,204,0.12), transparent 70%)",
+            background: "radial-gradient(circle, rgba(0,229,204,0.12), transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -1483,8 +1450,7 @@ function CTABanner(): React.JSX.Element {
             width: 300,
             height: 300,
             borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(124,92,252,0.1), transparent 70%)",
+            background: "radial-gradient(circle, rgba(124,92,252,0.1), transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -1515,34 +1481,36 @@ function CTABanner(): React.JSX.Element {
             market wallets. No minimum deposit. No subscription fees. Just alpha,
             executed at machine speed.
           </p>
-          <button
-            className="btn-shimmer font-display"
-            style={{
-              padding: "16px 40px",
-              borderRadius: 14,
-              border: "none",
-              cursor: "pointer",
-              color: "#060b18",
-              fontWeight: 700,
-              fontSize: 17,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-              transition: "transform 0.2s, box-shadow 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              const t = e.currentTarget as HTMLButtonElement;
-              t.style.transform = "translateY(-2px) scale(1.02)";
-              t.style.boxShadow = "0 12px 40px rgba(0,229,204,0.4)";
-            }}
-            onMouseLeave={(e) => {
-              const t = e.currentTarget as HTMLButtonElement;
-              t.style.transform = "translateY(0) scale(1)";
-              t.style.boxShadow = "none";
-            }}
-          >
-            <Wallet size={20} /> Launch App <ArrowRight size={16} />
-          </button>
+          <a href="/pricing">
+            <button
+              className="btn-shimmer font-display"
+              style={{
+                padding: "16px 40px",
+                borderRadius: 14,
+                border: "none",
+                cursor: "pointer",
+                color: "#060b18",
+                fontWeight: 700,
+                fontSize: 17,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                const t = e.currentTarget as HTMLButtonElement;
+                t.style.transform = "translateY(-2px) scale(1.02)";
+                t.style.boxShadow = "0 12px 40px rgba(0,229,204,0.4)";
+              }}
+              onMouseLeave={(e) => {
+                const t = e.currentTarget as HTMLButtonElement;
+                t.style.transform = "translateY(0) scale(1)";
+                t.style.boxShadow = "none";
+              }}
+            >
+              <User size={20} /> Get Started <ArrowRight size={16} />
+            </button>
+          </a>
         </div>
       </div>
     </section>
@@ -1554,10 +1522,10 @@ function CTABanner(): React.JSX.Element {
    ═══════════════════════════════════════ */
 function Footer(): React.JSX.Element {
   const columns = [
-    { title: "Product", links: ["Dashboard", "Whale Index", "Analytics", "API"] },
+    { title: "Product",   links: ["Dashboard", "Whale Index", "Analytics", "API"] },
     { title: "Resources", links: ["Documentation", "Tutorials", "Blog", "Changelog"] },
     { title: "Community", links: ["Discord", "Twitter / X", "Telegram", "GitHub"] },
-    { title: "Legal", links: ["Terms of Service", "Privacy Policy", "Risk Disclosure"] },
+    { title: "Legal",     links: ["Terms of Service", "Privacy Policy", "Risk Disclosure"] },
   ];
 
   return (
@@ -1581,16 +1549,7 @@ function Footer(): React.JSX.Element {
         >
           {/* Brand column */}
           <div>
-            <a
-              href="/"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 16,
-                textDecoration: "none",
-              }}
-            >
+            <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, textDecoration: "none" }}>
               <div
                 style={{
                   width: 32,
@@ -1604,21 +1563,11 @@ function Footer(): React.JSX.Element {
               >
                 <Waves size={18} color="#060b18" strokeWidth={2.5} />
               </div>
-              <span
-                className="font-display"
-                style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}
-              >
+              <span className="font-display" style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
                 Poly<span style={{ color: COLORS.accent }}>Whale</span>
               </span>
             </a>
-            <p
-              style={{
-                fontSize: 13,
-                lineHeight: 1.7,
-                color: COLORS.textSecondary,
-                maxWidth: 260,
-              }}
-            >
+            <p style={{ fontSize: 13, lineHeight: 1.7, color: COLORS.textSecondary, maxWidth: 260 }}>
               The most advanced Polymarket whale copy-trading engine. Mirror smart
               money on prediction markets. Capture alpha. Stay non-custodial.
             </p>
@@ -1645,20 +1594,9 @@ function Footer(): React.JSX.Element {
                   <li key={j} style={{ marginBottom: 10 }}>
                     <a
                       href="#"
-                      style={{
-                        color: COLORS.textSecondary,
-                        textDecoration: "none",
-                        fontSize: 13,
-                        transition: "color 0.2s",
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLAnchorElement).style.color =
-                          COLORS.accent)
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLAnchorElement).style.color =
-                          COLORS.textSecondary)
-                      }
+                      style={{ color: COLORS.textSecondary, textDecoration: "none", fontSize: 13, transition: "color 0.2s" }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = COLORS.accent)}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = COLORS.textSecondary)}
                     >
                       {link}
                     </a>
@@ -1682,28 +1620,16 @@ function Footer(): React.JSX.Element {
           }}
         >
           <span style={{ fontSize: 12, color: COLORS.textSecondary }}>
-            &copy; 2026 PolyWhale. All rights reserved. Prediction markets involve
-            risk.
+            &copy; 2026 PolyWhale. All rights reserved. Prediction markets involve risk.
           </span>
           <div style={{ display: "flex", gap: 20 }}>
             {["Twitter", "Discord", "Telegram", "GitHub"].map((s, i) => (
               <a
                 key={i}
                 href="#"
-                style={{
-                  fontSize: 12,
-                  color: COLORS.textSecondary,
-                  textDecoration: "none",
-                  transition: "color 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.color =
-                    COLORS.accent)
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.color =
-                    COLORS.textSecondary)
-                }
+                style={{ fontSize: 12, color: COLORS.textSecondary, textDecoration: "none", transition: "color 0.2s" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = COLORS.accent)}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = COLORS.textSecondary)}
               >
                 {s}
               </a>
