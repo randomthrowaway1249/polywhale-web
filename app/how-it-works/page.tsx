@@ -610,14 +610,13 @@ function Hero() {
           letterSpacing:"-0.04em", marginBottom:24, lineHeight:1.06,
           animation:"fade-up 0.5s ease 0.08s both",
         }}>
-          How{" "}
-          <span style={{
+          How{" "}<span style={{
             background:"linear-gradient(135deg,#00e5cc 0%,#7c5cfc 100%)",
             WebkitBackgroundClip:"text",
             WebkitTextFillColor:"transparent",
             backgroundClip:"text",
-          }}>Sub-Second Execution</span>
-          {" "}Wins Markets
+            whiteSpace:"nowrap",
+          }}>Sub-Second Execution</span>{" "}Wins Markets
         </h1>
 
         <p style={{
