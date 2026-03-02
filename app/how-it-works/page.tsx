@@ -5,7 +5,6 @@ import {
   Waves,
   Zap,
   Shield,
-  Target,
   ArrowRight,
   Eye,
   EyeOff,
@@ -114,15 +113,6 @@ function GlobalStyles(): React.JSX.Element {
         0%,100% { transform: translate(0,0)        scale(1);    }
         40%     { transform: translate(-60px,38px) scale(0.93); }
         70%     { transform: translate(40px,-48px) scale(1.06); }
-      }
-
-      @keyframes node-ping {
-        0%,100% { r: 3;   opacity: 0.6; }
-        50%     { r: 6;   opacity: 1;   }
-      }
-      @keyframes edge-flow {
-        0%   { stroke-dashoffset: 60; }
-        100% { stroke-dashoffset: 0;  }
       }
 
       @keyframes bar-fill {
@@ -414,9 +404,9 @@ function Header({ isSubscribed, setIsSubscribed }: {
 }
 
 /* ─────────────────────────────────────────
-   HERO
-   - Animated node-mesh SVG background
-   - Crisp headline: "Sub-Second Execution" gradient only
+   HERO — Minimalist Fintech
+   grid-bg background + faint radial glow
+   Clean h1, gradient only on "Sub-Second Execution"
 ───────────────────────────────────────── */
 function Hero() {
   return (
@@ -424,70 +414,19 @@ function Hero() {
       position:"relative", padding:"118px 24px 80px",
       textAlign:"center", overflow:"hidden",
     }}>
-      {/* Deep-ocean glow orbs */}
+      {/* Grid background overlay */}
+      <div className="grid-bg" style={{
+        position:"absolute", inset:0, opacity:0.18, pointerEvents:"none",
+      }}/>
+
+      {/* Single very faint radial glow — institutional, not crypto */}
       <div style={{
         position:"absolute", top:"50%", left:"50%",
-        width:860, height:860, marginLeft:-430, marginTop:-430,
+        width:900, height:600, marginLeft:-450, marginTop:-300,
         borderRadius:"50%",
-        background:"radial-gradient(circle,rgba(0,229,204,0.05) 0%,rgba(124,92,252,0.04) 42%,transparent 70%)",
-        filter:"blur(80px)", animation:"orb-a 22s ease-in-out infinite", pointerEvents:"none",
+        background:"radial-gradient(ellipse,rgba(0,229,204,0.05) 0%,transparent 68%)",
+        pointerEvents:"none",
       }}/>
-      <div style={{
-        position:"absolute", top:"36%", left:"58%",
-        width:580, height:580, marginLeft:-290, marginTop:-290,
-        borderRadius:"50%",
-        background:"radial-gradient(circle,rgba(124,92,252,0.05) 0%,transparent 65%)",
-        filter:"blur(64px)", animation:"orb-b 28s ease-in-out infinite", pointerEvents:"none",
-      }}/>
-
-      {/* Animated node-mesh SVG — radar / algorithmic network, opacity ~0.18 */}
-      <div style={{
-        position:"absolute", inset:0, opacity:0.18, pointerEvents:"none",
-        display:"flex", alignItems:"center", justifyContent:"center",
-      }}>
-        <svg width="100%" height="100%" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
-          {/* Edges — animated dashes */}
-          {([
-            [120,180, 340,120], [340,120, 600,200], [600,200, 860,140],
-            [860,140,1080,220], [1080,220,340,120], [600,200,  120,180],
-            [340,120, 600, 80], [600, 80, 860,140], [860,140,  600,200],
-            [120,180, 340,320], [340,320, 600,200], [600,320,  860,140],
-            [340,320, 600,400], [600,400, 860,320], [860,320, 1080,220],
-            [120,180, 240,360], [240,360, 340,320], [340,320,  240,120],
-            [600, 80, 480, 40], [480, 40, 340,120], [720, 40,  860,140],
-            [600, 80, 720, 40], [1080,220,1100,380],
-          ] as [number,number,number,number][]).map(([x1,y1,x2,y2], i) => (
-            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke="#00e5cc" strokeWidth="0.7" strokeOpacity="0.35"
-              strokeDasharray="6 10"
-              style={{
-                animation:`edge-flow ${2 + (i % 5) * 0.7}s linear infinite`,
-                animationDelay:`${(i * 0.3) % 3}s`,
-              }}
-            />
-          ))}
-
-          {/* Nodes */}
-          {([
-            [120,180],[340,120],[600,200],[860,140],[1080,220],
-            [340,320],[600,400],[860,320],[240,360],[600, 80],
-            [480, 40],[720, 40],[1100,380],[600,320],
-          ] as [number,number][]).map(([cx,cy], i) => (
-            <g key={i}>
-              <circle cx={cx} cy={cy} r={i === 2 ? 6 : 3.5}
-                fill={i === 2 ? C.accent : "rgba(0,229,204,0.7)"}
-                style={{
-                  animation:`node-ping ${1.8 + (i % 4) * 0.6}s ease-in-out infinite`,
-                  animationDelay:`${(i * 0.4) % 2.5}s`,
-                }}
-              />
-              <circle cx={cx} cy={cy} r={i === 2 ? 12 : 7}
-                fill="none" stroke="#00e5cc" strokeWidth="0.8" strokeOpacity="0.12"
-              />
-            </g>
-          ))}
-        </svg>
-      </div>
 
       {/* Content */}
       <div style={{ position:"relative", maxWidth:700, margin:"0 auto" }}>
@@ -501,7 +440,7 @@ function Hero() {
           <BrainCircuit size={13}/> The Science of Alpha
         </div>
 
-        {/* Headline — "Sub-Second Execution" gradient only, rest is crisp white */}
+        {/* Headline — "Sub-Second Execution" gradient only, rest pure white */}
         <h1 className="font-syne" style={{
           fontSize:"clamp(38px,5.6vw,64px)", fontWeight:800, color:"#fff",
           letterSpacing:"-0.04em", marginBottom:28, lineHeight:1.04,
@@ -527,10 +466,35 @@ function Hero() {
           edge that no human trader can replicate.
         </p>
 
+        {/* Three key stats — clean data row */}
+        <div style={{
+          marginTop:56, display:"flex", gap:0, justifyContent:"center",
+          animation:"fade-up 0.5s ease 0.22s both",
+          background:"rgba(11,18,33,0.6)", border:"1px solid rgba(255,255,255,0.05)",
+          borderRadius:14, overflow:"hidden", maxWidth:520, margin:"56px auto 0",
+        }}>
+          {[
+            { val:"<20ms", label:"Avg. Execution" },
+            { val:"1,200+", label:"Whale Wallets" },
+            { val:"EU-W1",  label:"Co-Location" },
+          ].map((stat, i) => (
+            <div key={i} style={{
+              flex:1, padding:"22px 16px", textAlign:"center",
+              borderRight: i < 2 ? "1px solid rgba(255,255,255,0.04)" : "none",
+            }}>
+              <div className="font-mono" style={{
+                fontSize:20, fontWeight:700, color: i === 0 ? C.accent : "#fff",
+                letterSpacing:"-0.03em", marginBottom:5,
+              }}>{stat.val}</div>
+              <div style={{ fontSize:10, color:C.textDim, textTransform:"uppercase", letterSpacing:"0.12em" }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+
         {/* Scroll indicator */}
         <div style={{
-          marginTop:72, display:"flex", flexDirection:"column",
-          alignItems:"center", gap:10, animation:"fade-up 0.5s ease 0.24s both",
+          marginTop:56, display:"flex", flexDirection:"column",
+          alignItems:"center", gap:10, animation:"fade-up 0.5s ease 0.28s both",
         }}>
           <span style={{ fontSize:9, color:C.textDim, textTransform:"uppercase", letterSpacing:"0.2em", fontWeight:600 }}>
             Explore
@@ -624,7 +588,7 @@ function LatencySection() {
             </div>
           </div>
 
-          {/* Bloomberg Terminal Panel — bgDeep #0b1221, border white/5 */}
+          {/* Bloomberg Terminal Panel */}
           <div style={{ flex:"1 1 380px" }}>
             <div style={{
               padding:"26px 26px 22px", borderRadius:18,
@@ -664,9 +628,9 @@ function LatencySection() {
                     }}>
                       <div>
                         <div style={{ fontSize:12, color:C.text, fontWeight:600, marginBottom:2 }}>{b.label}</div>
-                        <div style={{ fontSize:10, color:C.textDim }}>{b.sub}</div>
+                        <div className="font-mono" style={{ fontSize:10, color:C.textDim }}>{b.sub}</div>
                       </div>
-                      {/* Right-aligned monospace neon value — bright cyan for PolyWhale */}
+                      {/* Monospace neon latency value */}
                       <span className="font-mono" style={{
                         fontSize:14, fontWeight:700,
                         color: i === 2 ? C.accent : b.color,
@@ -677,7 +641,7 @@ function LatencySection() {
                       }}>{b.ms}</span>
                     </div>
 
-                    {/* Thin track */}
+                    {/* Ultra-thin 4px track */}
                     <div style={{
                       position:"relative", height:4, borderRadius:2,
                       background:"rgba(255,255,255,0.03)", overflow:"visible",
@@ -757,65 +721,28 @@ function LatencySection() {
 }
 
 /* ─────────────────────────────────────────
-   SECTION 2 — Live Data Pipeline
-   Animated cyan "data packet" travels along
-   SVG dashed line: Step 1 → Step 2 → Step 3
+   SECTION 2 — The Mirroring Engine
+   Static elegant dashed connector. No moving dot.
 ───────────────────────────────────────── */
 function MirroringSection() {
-  const ref    = useReveal();
-  const svgRef = useRef<SVGSVGElement>(null);
-  const dotRef = useRef<SVGCircleElement>(null);
+  const ref = useReveal();
   const [activeStep, setActiveStep] = useState<number | null>(null);
-
-  /* rAF-driven dot traveling along the connector */
-  useEffect(() => {
-    let raf: number;
-    let start: number | null = null;
-    const DURATION = 2400;
-
-    const tick = (ts: number) => {
-      if (!dotRef.current || !svgRef.current) { raf = requestAnimationFrame(tick); return; }
-      if (!start) start = ts;
-      const t  = ((ts - start) % DURATION) / DURATION; // 0→1 looping
-      const W  = svgRef.current.clientWidth  || 700;
-      const H  = svgRef.current.clientHeight || 56;
-      const y  = H / 2;
-      const x1 = W * 0.165;
-      const x2 = W * 0.500;
-      const x3 = W * 0.835;
-
-      const x = t < 0.5
-        ? x1 + (x2 - x1) * (t / 0.5)
-        : x2 + (x3 - x2) * ((t - 0.5) / 0.5);
-
-      const fade = t < 0.05 ? t / 0.05 : t > 0.95 ? (1 - t) / 0.05 : 1;
-
-      dotRef.current.setAttribute("cx", String(x));
-      dotRef.current.setAttribute("cy", String(y));
-      dotRef.current.setAttribute("opacity", String(fade.toFixed(3)));
-
-      raf = requestAnimationFrame(tick);
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
 
   const steps = [
     {
-      num:"01", icon:<Radio size={24}/>, color:C.accent,
+      num:"01", icon:<Radio size={22}/>, color:C.accent,
       title:"Whale Wallet Monitored",
       desc:"1,200+ verified whale addresses tracked via Polymarket's real-time event stream. Signal captured the instant a position opens or shifts.",
       tag:"~3ms detection",
     },
     {
-      num:"02", icon:<Activity size={24}/>, color:C.accentAlt,
+      num:"02", icon:<Activity size={22}/>, color:C.accentAlt,
       title:"PolyWhale Engine",
       desc:"Position sizing, risk limits, whale conviction scoring, and order construction resolved in a single non-blocking cycle from co-located EU-West 1 infrastructure.",
       tag:"~8ms processing",
     },
     {
-      num:"03", icon:<Wallet size={24}/>, color:C.accentPink,
+      num:"03", icon:<Wallet size={22}/>, color:C.accentPink,
       title:"Your Portfolio Executed",
       desc:"Mirrored order fires directly to Polymarket's matching engine. Confirmed on-chain before most participants have registered the whale's move.",
       tag:"~6ms placement",
@@ -842,55 +769,37 @@ function MirroringSection() {
         </div>
 
         {/* Pipeline wrapper */}
-        <div style={{ position:"relative", paddingTop:64 }}>
+        <div style={{ position:"relative", paddingTop:48 }}>
 
-          {/* SVG connector with traveling data-packet dot */}
+          {/* Static elegant dashed connector — desktop only */}
           <div className="pipeline-connector" style={{
-            position:"absolute", top:0, left:0, right:0, height:56,
+            position:"absolute", top:0, left:0, right:0, height:48,
             pointerEvents:"none", zIndex:1,
           }}>
-            <svg ref={svgRef} width="100%" height="56" style={{ overflow:"visible" }}>
-              <defs>
-                <linearGradient id="pipeGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%"   stopColor={C.accent}     stopOpacity="0.55"/>
-                  <stop offset="50%"  stopColor={C.accentAlt}  stopOpacity="0.65"/>
-                  <stop offset="100%" stopColor={C.accentPink} stopOpacity="0.55"/>
-                </linearGradient>
-                <filter id="packetGlow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="4" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-
+            <svg width="100%" height="48" style={{ overflow:"visible" }}>
               {/* Left segment */}
               <line x1="16.5%" y1="50%" x2="50%" y2="50%"
-                stroke="url(#pipeGrad)" strokeWidth="1.5" strokeDasharray="7 8"
-                style={{ animation:"edge-flow 1.1s linear infinite" }}
+                stroke="rgba(255,255,255,0.10)"
+                strokeWidth="1"
+                strokeDasharray="5 9"
               />
               {/* Right segment */}
               <line x1="50%" y1="50%" x2="83.5%" y2="50%"
-                stroke="url(#pipeGrad)" strokeWidth="1.5" strokeDasharray="7 8"
-                style={{ animation:"edge-flow 1.1s linear infinite 0.55s" }}
+                stroke="rgba(255,255,255,0.10)"
+                strokeWidth="1"
+                strokeDasharray="5 9"
               />
-
-              {/* Chevron arrowheads at 33% and 67% */}
-              {([33,67] as number[]).map((xPct, i) => (
+              {/* Static arrow chevrons */}
+              {([33, 67] as number[]).map((xPct, i) => (
                 <polyline key={i}
-                  points={`${xPct - 1.2}%,30 ${xPct + 1.5}%,50% ${xPct - 1.2}%,70%`}
+                  points={`${xPct - 1.1}%,32 ${xPct + 1.4}%,50% ${xPct - 1.1}%,68%`}
                   fill="none"
-                  stroke={i === 0 ? C.accentAlt : C.accentPink}
-                  strokeWidth="1.5" strokeOpacity="0.65"
-                  strokeLinecap="round" strokeLinejoin="round"
+                  stroke="rgba(255,255,255,0.14)"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               ))}
-
-              {/* Glowing data-packet dot traveling along connector */}
-              <circle
-                ref={dotRef}
-                r="5.5"
-                fill={C.accent}
-                filter="url(#packetGlow)"
-              />
             </svg>
           </div>
 
@@ -905,13 +814,13 @@ function MirroringSection() {
                   onMouseLeave={() => setActiveStep(null)}
                   style={{
                     flex:1, padding:"30px 26px", borderRadius:18,
-                    background: active ? `${s.color}07` : C.bgDeep,
-                    border:`1px solid ${active ? `${s.color}30` : "rgba(255,255,255,0.05)"}`,
+                    background:"#0c1428",
+                    border:`1px solid ${active ? `${s.color}28` : "rgba(255,255,255,0.05)"}`,
                     boxShadow: active
-                      ? `0 0 56px ${s.color}10, inset 0 1px 0 rgba(255,255,255,0.03)`
+                      ? `0 12px 40px ${s.color}10, inset 0 1px 0 rgba(255,255,255,0.03)`
                       : "inset 0 1px 0 rgba(255,255,255,0.02)",
-                    transform: active ? "translateY(-7px) scale(1.02)" : "translateY(0) scale(1)",
-                    transition:"all 0.4s cubic-bezier(.16,1,.3,1)",
+                    transform: active ? "translateY(-4px)" : "translateY(0)",
+                    transition:"all 0.35s cubic-bezier(.16,1,.3,1)",
                     cursor:"default", position:"relative",
                   }}
                 >
@@ -921,7 +830,7 @@ function MirroringSection() {
                     color:`${s.color}06`, lineHeight:1, userSelect:"none",
                   }}>{s.num}</div>
 
-                  {/* Live signal when hovered */}
+                  {/* Live signal dot — only visible on hover */}
                   {active && (
                     <div style={{
                       position:"absolute", top:17, left:17,
@@ -936,19 +845,18 @@ function MirroringSection() {
                   )}
 
                   <div style={{
-                    width:48, height:48, borderRadius:13,
+                    width:46, height:46, borderRadius:12,
                     background:`${s.color}08`, border:`1px solid ${s.color}12`,
                     display:"flex", alignItems:"center", justifyContent:"center",
                     color:s.color, marginBottom:20,
-                    transform: active ? "scale(1.12) rotate(-8deg)" : "scale(1)",
-                    boxShadow: active ? `0 0 24px ${s.color}20` : "none",
-                    transition:"all 0.4s cubic-bezier(.16,1,.3,1)",
+                    transform: active ? "scale(1.08) rotate(-5deg)" : "scale(1)",
+                    transition:"all 0.35s cubic-bezier(.16,1,.3,1)",
                   }}>
                     {s.icon}
                   </div>
 
                   <h3 className="font-syne" style={{
-                    fontSize:17, fontWeight:700, color:"#fff",
+                    fontSize:16, fontWeight:700, color:"#fff",
                     marginBottom:10, letterSpacing:"-0.02em",
                   }}>{s.title}</h3>
                   <p style={{ fontSize:13, lineHeight:1.76, color:C.textMuted, marginBottom:18 }}>{s.desc}</p>
@@ -1065,7 +973,7 @@ function SecuritySection() {
             ))}
           </div>
 
-          {/* Never Requested — dark with subtle red tint */}
+          {/* Never Requested — dark with subtle pink tint */}
           <div style={{
             padding:32,
             background:"linear-gradient(150deg,rgba(244,114,182,0.07) 0%,rgba(6,10,24,0.92) 100%)",
@@ -1089,6 +997,35 @@ function SecuritySection() {
                 <span className="font-mono" style={{ fontSize:12, color:"rgba(255,255,255,0.20)", fontWeight:500 }}>{p}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Trade-Only callout banner */}
+        <div style={{
+          padding:"20px 28px", borderRadius:14, marginBottom:44,
+          background:"rgba(0,229,204,0.04)",
+          border:"1px solid rgba(0,229,204,0.12)",
+          display:"flex", alignItems:"center", gap:16,
+        }}>
+          <div style={{
+            width:36, height:36, borderRadius:9, flexShrink:0,
+            background:"rgba(0,229,204,0.08)", border:"1px solid rgba(0,229,204,0.14)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+          }}>
+            <Key size={16} color={C.accent}/>
+          </div>
+          <div>
+            <span className="font-mono" style={{
+              fontSize:11, fontWeight:700, color:C.accent,
+              letterSpacing:"0.1em", textTransform:"uppercase",
+              background:"rgba(0,229,204,0.10)", padding:"3px 9px",
+              borderRadius:5, marginRight:10, border:"1px solid rgba(0,229,204,0.18)",
+            }}>Trade-Only</span>
+            <span style={{ fontSize:13, color:C.textMuted, lineHeight:1.6 }}>
+              Our API scope is structurally constrained to order operations. Withdrawal access
+              is{" "}<strong style={{ color:"#fff", fontWeight:600 }}>architecturally impossible</strong>{" "}
+              — not a policy decision, but a hard technical boundary.
+            </span>
           </div>
         </div>
 
