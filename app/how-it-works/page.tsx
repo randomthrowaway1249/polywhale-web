@@ -1315,7 +1315,7 @@ function SecuritySection(): React.JSX.Element {
     {
       icon: <Key size={18} />,
       title: "Trade-Only Permissions",
-      desc: "We only request "Trade" permissions on your Polymarket API key. Withdrawal access is never requested — it's architecturally impossible for us to move your funds.",
+      desc: 'We only request "Trade" permissions on your Polymarket API key. Withdrawal access is never requested — it\'s architecturally impossible for us to move your funds.',
       color: C.accent,
     },
     {
