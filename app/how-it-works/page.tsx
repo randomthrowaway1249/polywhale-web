@@ -15,14 +15,13 @@ import {
   X,
   ExternalLink,
   BrainCircuit,
-  Radio,
-  Gauge,
   ShieldCheck,
   Fingerprint,
   Check,
   X as XIcon,
-  Activity,
-  Wallet,
+  Cpu,
+  Users,
+  TrendingUp,
 } from "lucide-react";
 
 /* ─────────────────────────────────────────
@@ -104,35 +103,45 @@ function GlobalStyles(): React.JSX.Element {
         to   { opacity:1; transform:translateY(0);    }
       }
 
-      @keyframes orb-a {
-        0%,100% { transform: translate(0,0)       scale(1);    }
-        33%     { transform: translate(55px,-40px) scale(1.07); }
-        66%     { transform: translate(-30px,28px) scale(0.94); }
-      }
-      @keyframes orb-b {
-        0%,100% { transform: translate(0,0)        scale(1);    }
-        40%     { transform: translate(-60px,38px) scale(0.93); }
-        70%     { transform: translate(40px,-48px) scale(1.06); }
-      }
-
       @keyframes bar-fill {
         from { transform: scaleX(0); }
         to   { transform: scaleX(1); }
       }
+
       @keyframes signal-ring {
-        0%   { transform: scale(1); opacity:0.7; }
-        100% { transform: scale(3); opacity:0;   }
+        0%   { transform: scale(1); opacity: 0.7; }
+        100% { transform: scale(2.8); opacity: 0; }
       }
+
       @keyframes scroll-dot {
         0%,100% { opacity:0.3; transform:translateY(0);   }
         50%     { opacity:1;   transform:translateY(7px); }
       }
+
       @keyframes glow-pulse {
         0%,100% { box-shadow: 0 0 12px rgba(0,229,204,0.14); }
         50%     { box-shadow: 0 0 28px rgba(0,229,204,0.38); }
       }
 
-      .rv { opacity:0; transform:translateY(40px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+      @keyframes engine-glow {
+        0%,100% {
+          box-shadow: 0 0 0 1px rgba(0,229,204,0.12), 0 0 40px rgba(0,229,204,0.06), 0 24px 80px rgba(0,0,0,0.6);
+        }
+        50% {
+          box-shadow: 0 0 0 1px rgba(0,229,204,0.22), 0 0 80px rgba(0,229,204,0.12), 0 24px 80px rgba(0,0,0,0.6);
+        }
+      }
+
+      @keyframes terminal-in {
+        from { opacity: 0; transform: translateX(-8px); }
+        to   { opacity: 1; transform: translateX(0); }
+      }
+
+      .rv {
+        opacity:0;
+        transform:translateY(40px);
+        transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+      }
       .rv.vis { opacity:1; transform:translateY(0); }
 
       ::-webkit-scrollbar { width:5px; }
@@ -145,8 +154,7 @@ function GlobalStyles(): React.JSX.Element {
         .lat-layout        { flex-direction:column !important; }
         .perm-grid         { grid-template-columns:1fr !important; }
         .sec-cards         { grid-template-columns:1fr !important; }
-        .pipeline-row      { flex-direction:column !important; gap:32px !important; }
-        .pipeline-connector{ display:none !important; }
+        .arch-row          { flex-direction:column !important; align-items:center !important; }
       }
       @media(min-width:769px) {
         .show-mobile-only { display:none !important; }
@@ -198,10 +206,7 @@ function SectionLabel({ num, text, color }: { num: string; text: string; color: 
 }
 
 /* ─────────────────────────────────────────
-   HEADER
-   Links: ["The Bot","Whales","Pricing","How It Works"]
-   + Socials dropdown
-   Far right: PRO/Free toggle ONLY (no Sign In)
+   HEADER  (exact clone from app/page.tsx)
 ───────────────────────────────────────── */
 function Header({ isSubscribed, setIsSubscribed }: {
   isSubscribed: boolean;
@@ -284,7 +289,7 @@ function Header({ isSubscribed, setIsSubscribed }: {
             >{l}</a>
           ))}
 
-          {/* Glassmorphism Socials dropdown */}
+          {/* Socials dropdown */}
           <div ref={socialsRef} style={{ position:"relative" }}>
             <button onClick={() => setSocialsOpen(!socialsOpen)} style={{
               ...lStyle, background:"none", border:"none", cursor:"pointer",
@@ -300,7 +305,6 @@ function Header({ isSubscribed, setIsSubscribed }: {
                 transition:"transform 0.22s",
               }}/>
             </button>
-
             {socialsOpen && (
               <div style={{
                 position:"absolute", top:"calc(100% + 10px)", right:0,
@@ -329,7 +333,7 @@ function Header({ isSubscribed, setIsSubscribed }: {
             )}
           </div>
 
-          {/* PRO / Free Tier toggle — ONLY right-side element, no Sign In */}
+          {/* PRO / Free Tier toggle */}
           <button onClick={() => setIsSubscribed(!isSubscribed)} style={{
             display:"inline-flex", alignItems:"center", gap:7,
             padding:"7px 14px", borderRadius:8,
@@ -404,100 +408,238 @@ function Header({ isSubscribed, setIsSubscribed }: {
 }
 
 /* ─────────────────────────────────────────
-   HERO — Minimalist Fintech
-   grid-bg background + faint radial glow
-   Clean h1, gradient only on "Sub-Second Execution"
+   EXECUTION TERMINAL
+───────────────────────────────────────── */
+type LogLine = {
+  id: number;
+  ts: string;
+  msg: string;
+  kind: "ok" | "signal" | "info" | "exec" | "confirm" | "skip";
+};
+
+const LOG_POOL: Omit<LogLine, "id">[] = [
+  { ts:"0.001ms", msg:"POLYMARKET WSS STREAM CONNECTED",                              kind:"ok"      },
+  { ts:"0.003ms", msg:'SUBSCRIBE → ["user","market","book","orderbook"]',             kind:"info"    },
+  { ts:"0.004ms", msg:"WHALE SIGNAL DETECTED: 0x89Ab4F...f4a2",                      kind:"signal"  },
+  { ts:"0.005ms", msg:'PARSING MARKET: "Fed Rate Cut By July — YES"',                kind:"info"    },
+  { ts:"0.006ms", msg:"CONVICTION SCORE: 0.94  THRESHOLD: 0.72  → PASS",             kind:"ok"      },
+  { ts:"0.007ms", msg:"POSITION SIZE: $4,200 USDC  MAX EXPOSURE: OK",                kind:"ok"      },
+  { ts:"0.009ms", msg:"CONSTRUCTING LIMIT ORDER @ 0.612  SLIPPAGE BOUND: 0.1%",      kind:"info"    },
+  { ts:"0.012ms", msg:"EXECUTING MIRROR ORDER → POLYMARKET CLOB",                    kind:"exec"    },
+  { ts:"0.014ms", msg:"ORDER CONFIRMED  TX: 0xf3c1...8ab4  FILL: 100%",              kind:"confirm" },
+  { ts:"0.015ms", msg:"POSITION LOGGED  P&L TRACKING ACTIVE",                        kind:"ok"      },
+  { ts:"0.017ms", msg:"WHALE SIGNAL DETECTED: 0x3Fe07D...c91b",                      kind:"signal"  },
+  { ts:"0.018ms", msg:'PARSING MARKET: "BTC $100K Before EOY — YES"',               kind:"info"    },
+  { ts:"0.020ms", msg:"CONVICTION SCORE: 0.88  THRESHOLD: 0.72  → PASS",             kind:"ok"      },
+  { ts:"0.021ms", msg:"POSITION SIZE: $1,850 USDC  MAX EXPOSURE: OK",                kind:"ok"      },
+  { ts:"0.023ms", msg:"CONSTRUCTING MARKET ORDER  SLIPPAGE BOUND: 0.08%",            kind:"info"    },
+  { ts:"0.026ms", msg:"EXECUTING MIRROR ORDER → POLYMARKET CLOB",                    kind:"exec"    },
+  { ts:"0.028ms", msg:"ORDER CONFIRMED  TX: 0xa9d4...22f7  FILL: 100%",              kind:"confirm" },
+  { ts:"0.030ms", msg:"PORTFOLIO REBALANCED  EXPOSURE WITHIN BOUNDS",                kind:"ok"      },
+  { ts:"0.033ms", msg:"WHALE SIGNAL DETECTED: 0xB12cA9...019d",                      kind:"signal"  },
+  { ts:"0.035ms", msg:'PARSING MARKET: "Trump Wins 2028 — YES"',                    kind:"info"    },
+  { ts:"0.037ms", msg:"CONVICTION SCORE: 0.61  THRESHOLD: 0.72  → SKIP",             kind:"skip"    },
+  { ts:"0.038ms", msg:"SIGNAL FILTERED  BELOW CONVICTION THRESHOLD",                 kind:"skip"    },
+  { ts:"0.040ms", msg:"HEARTBEAT OK  LATENCY: 14.2ms  UPTIME: 99.98%",               kind:"ok"      },
+  { ts:"0.042ms", msg:"WHALE SIGNAL DETECTED: 0xC9e1b2...8812",                      kind:"signal"  },
+  { ts:"0.043ms", msg:'PARSING MARKET: "Recession Before 2026 — NO"',               kind:"info"    },
+  { ts:"0.045ms", msg:"CONVICTION SCORE: 0.91  THRESHOLD: 0.72  → PASS",             kind:"ok"      },
+  { ts:"0.046ms", msg:"EXECUTING MIRROR ORDER → POLYMARKET CLOB",                    kind:"exec"    },
+  { ts:"0.048ms", msg:"ORDER CONFIRMED  TX: 0x77de...ef03  FILL: 100%",              kind:"confirm" },
+];
+
+function kindColor(k: LogLine["kind"]): string {
+  return k === "ok"      ? C.accent
+       : k === "signal"  ? "#fbbf24"
+       : k === "exec"    ? C.accentAlt
+       : k === "confirm" ? "#4ade80"
+       : k === "skip"    ? C.textDim
+       :                   C.textMuted;
+}
+function kindPrefix(k: LogLine["kind"]): string {
+  return k === "ok"      ? "✓ "
+       : k === "signal"  ? "⚡ "
+       : k === "exec"    ? "→ "
+       : k === "confirm" ? "● "
+       : k === "skip"    ? "○ "
+       :                   "  ";
+}
+
+function ExecutionTerminal() {
+  const [lines, setLines] = useState<LogLine[]>([]);
+  const [cursorOn, setCursorOn] = useState(true);
+  const poolIdx  = useRef(0);
+  const nextId   = useRef(0);
+  const bodyRef  = useRef<HTMLDivElement>(null);
+  const MAX = 13;
+
+  useEffect(() => {
+    const id = setInterval(() => setCursorOn(v => !v), 530);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const add = () => {
+      const entry = LOG_POOL[poolIdx.current % LOG_POOL.length];
+      poolIdx.current++;
+      setLines(prev => {
+        const next = [...prev, { ...entry, id: nextId.current++ }];
+        return next.length > MAX ? next.slice(-MAX) : next;
+      });
+    };
+    add();
+    const id = setInterval(add, 860);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [lines]);
+
+  return (
+    <div style={{
+      borderRadius:16,
+      background:"rgba(4,8,18,0.96)",
+      border:"1px solid rgba(0,229,204,0.13)",
+      boxShadow:"0 0 0 1px rgba(255,255,255,0.025), 0 40px 100px rgba(0,0,0,0.75), 0 0 70px rgba(0,229,204,0.04)",
+      overflow:"hidden",
+      maxWidth:680,
+      margin:"0 auto",
+      animation:"fade-up 0.5s ease 0.26s both",
+    }}>
+      {/* Title bar */}
+      <div style={{
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+        padding:"11px 16px",
+        background:"rgba(255,255,255,0.018)",
+        borderBottom:"1px solid rgba(255,255,255,0.035)",
+      }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ display:"flex", gap:6 }}>
+            {(["#ff5f57","#febc2e","#28c840"] as string[]).map((col, i) => (
+              <div key={i} style={{ width:11, height:11, borderRadius:"50%", background:col, opacity:0.75 }}/>
+            ))}
+          </div>
+          <span className="font-mono" style={{ fontSize:10, color:C.textDim, letterSpacing:"0.09em", marginLeft:8 }}>
+            polywhale-engine  —  execution.log
+          </span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{
+            width:6, height:6, borderRadius:"50%", background:"#28c840",
+            boxShadow:"0 0 6px #28c84090",
+          }}/>
+          <span className="font-mono" style={{ fontSize:9, color:"#28c840", letterSpacing:"0.12em" }}>LIVE</span>
+        </div>
+      </div>
+
+      {/* Log body */}
+      <div ref={bodyRef} style={{
+        padding:"16px 18px 12px",
+        height:256,
+        overflowY:"hidden",
+        display:"flex",
+        flexDirection:"column",
+        gap:1,
+      }}>
+        {lines.map((line, idx) => (
+          <div key={line.id} style={{
+            display:"flex", gap:0, alignItems:"baseline",
+            animation: idx === lines.length - 1 ? "terminal-in 0.15s ease both" : "none",
+          }}>
+            <span className="font-mono" style={{
+              fontSize:10.5, color:"#2d4060", minWidth:70, flexShrink:0, userSelect:"none",
+            }}>[{line.ts}]</span>
+            <span className="font-mono" style={{
+              fontSize:10.5, color: kindColor(line.kind),
+              whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
+              opacity: line.kind === "skip" ? 0.45 : 1,
+            }}>
+              {kindPrefix(line.kind)}{line.msg}
+            </span>
+          </div>
+        ))}
+
+        {/* Blinking block cursor */}
+        <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:3 }}>
+          <span className="font-mono" style={{ fontSize:10.5, color:C.accent, userSelect:"none" }}>›</span>
+          <div style={{
+            width:6, height:13, borderRadius:1,
+            background: cursorOn ? C.accent : "transparent",
+            transition:"background 0.04s",
+          }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   HERO
 ───────────────────────────────────────── */
 function Hero() {
   return (
     <section style={{
-      position:"relative", padding:"118px 24px 80px",
+      position:"relative", padding:"110px 24px 96px",
       textAlign:"center", overflow:"hidden",
     }}>
-      {/* Grid background overlay */}
-      <div className="grid-bg" style={{
-        position:"absolute", inset:0, opacity:0.18, pointerEvents:"none",
-      }}/>
-
-      {/* Single very faint radial glow — institutional, not crypto */}
+      {/* Faint centered radial glow */}
       <div style={{
-        position:"absolute", top:"50%", left:"50%",
-        width:900, height:600, marginLeft:-450, marginTop:-300,
+        position:"absolute", top:"28%", left:"50%",
+        width:780, height:480, marginLeft:-390, marginTop:-240,
         borderRadius:"50%",
-        background:"radial-gradient(ellipse,rgba(0,229,204,0.05) 0%,transparent 68%)",
+        background:"radial-gradient(ellipse,rgba(0,229,204,0.05) 0%,transparent 66%)",
         pointerEvents:"none",
       }}/>
 
-      {/* Content */}
-      <div style={{ position:"relative", maxWidth:700, margin:"0 auto" }}>
+      <div style={{ position:"relative", maxWidth:760, margin:"0 auto" }}>
+        {/* Eyebrow pill */}
         <div style={{
           display:"inline-flex", alignItems:"center", gap:8,
           padding:"7px 16px", borderRadius:100,
           background:"rgba(0,229,204,0.05)", border:"1px solid rgba(0,229,204,0.09)",
-          marginBottom:36, fontSize:12, color:C.accent, fontWeight:600,
+          marginBottom:32, fontSize:12, color:C.accent, fontWeight:600,
           fontFamily:"DM Sans, sans-serif", animation:"fade-up 0.5s ease both",
         }}>
           <BrainCircuit size={13}/> The Science of Alpha
         </div>
 
-        {/* Headline — "Sub-Second Execution" gradient only, rest pure white */}
+        {/* H1 — pure white, only "Sub-Second Execution" carries the gradient */}
         <h1 className="font-syne" style={{
-          fontSize:"clamp(38px,5.6vw,64px)", fontWeight:800, color:"#fff",
-          letterSpacing:"-0.04em", marginBottom:28, lineHeight:1.04,
+          fontSize:"clamp(36px,5.2vw,62px)", fontWeight:800, color:"#fff",
+          letterSpacing:"-0.04em", marginBottom:24, lineHeight:1.06,
           animation:"fade-up 0.5s ease 0.08s both",
         }}>
           How{" "}
           <span style={{
             background:"linear-gradient(135deg,#00e5cc 0%,#7c5cfc 100%)",
-            WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
+            WebkitBackgroundClip:"text",
+            WebkitTextFillColor:"transparent",
             backgroundClip:"text",
-          }}>
-            Sub-Second Execution
-          </span>
-          <br/>Wins Markets
+          }}>Sub-Second Execution</span>
+          {" "}Wins Markets
         </h1>
 
         <p style={{
-          fontSize:17, color:C.textMuted, lineHeight:1.82,
-          maxWidth:520, margin:"0 auto", animation:"fade-up 0.5s ease 0.16s both",
+          fontSize:16, color:C.textMuted, lineHeight:1.84,
+          maxWidth:500, margin:"0 auto 52px",
+          animation:"fade-up 0.5s ease 0.15s both",
         }}>
           In prediction markets, information is only as valuable as the speed at
           which you act on it. See exactly how PolyWhale delivers the structural
-          edge that no human trader can replicate.
+          edge no human trader can replicate.
         </p>
 
-        {/* Three key stats — clean data row */}
-        <div style={{
-          marginTop:56, display:"flex", gap:0, justifyContent:"center",
-          animation:"fade-up 0.5s ease 0.22s both",
-          background:"rgba(11,18,33,0.6)", border:"1px solid rgba(255,255,255,0.05)",
-          borderRadius:14, overflow:"hidden", maxWidth:520, margin:"56px auto 0",
-        }}>
-          {[
-            { val:"<20ms", label:"Avg. Execution" },
-            { val:"1,200+", label:"Whale Wallets" },
-            { val:"EU-W1",  label:"Co-Location" },
-          ].map((stat, i) => (
-            <div key={i} style={{
-              flex:1, padding:"22px 16px", textAlign:"center",
-              borderRight: i < 2 ? "1px solid rgba(255,255,255,0.04)" : "none",
-            }}>
-              <div className="font-mono" style={{
-                fontSize:20, fontWeight:700, color: i === 0 ? C.accent : "#fff",
-                letterSpacing:"-0.03em", marginBottom:5,
-              }}>{stat.val}</div>
-              <div style={{ fontSize:10, color:C.textDim, textTransform:"uppercase", letterSpacing:"0.12em" }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
+        {/* The Execution Terminal */}
+        <ExecutionTerminal/>
 
-        {/* Scroll indicator */}
+        {/* Scroll nudge */}
         <div style={{
-          marginTop:56, display:"flex", flexDirection:"column",
-          alignItems:"center", gap:10, animation:"fade-up 0.5s ease 0.28s both",
+          marginTop:50, display:"flex", flexDirection:"column",
+          alignItems:"center", gap:10, animation:"fade-up 0.5s ease 0.35s both",
         }}>
           <span style={{ fontSize:9, color:C.textDim, textTransform:"uppercase", letterSpacing:"0.2em", fontWeight:600 }}>
-            Explore
+            Explore the Architecture
           </span>
           <div style={{
             width:20, height:36, borderRadius:10,
@@ -516,7 +658,7 @@ function Hero() {
 }
 
 /* ─────────────────────────────────────────
-   SECTION 1 — Bloomberg Latency Terminal
+   SECTION 1 — Latency Terminal
 ───────────────────────────────────────── */
 function LatencySection() {
   const ref = useReveal();
@@ -534,7 +676,6 @@ function LatencySection() {
         <SectionLabel num="01" text="The Latency Advantage" color={C.accent}/>
 
         <div className="lat-layout" style={{ display:"flex", gap:60, alignItems:"flex-start" }}>
-          {/* Copy */}
           <div style={{ flex:"1 1 400px" }}>
             <h2 className="font-syne" style={{
               fontSize:"clamp(26px,3.5vw,40px)", fontWeight:800, color:"#fff",
@@ -556,7 +697,6 @@ function LatencySection() {
               This is a structural advantage, not a marginal one.
             </p>
 
-            {/* Live latency badge */}
             <div
               onMouseEnter={() => setZapHov(true)}
               onMouseLeave={() => setZapHov(false)}
@@ -570,7 +710,7 @@ function LatencySection() {
               }}
             >
               <div style={{
-                color:C.accent, display:"flex",
+                color:C.accent,
                 transition:"filter 0.3s",
                 filter: zapHov ? "drop-shadow(0 0 10px rgba(0,229,204,0.8))" : "none",
               }}>
@@ -580,9 +720,7 @@ function LatencySection() {
                 <div className="font-mono" style={{
                   fontSize:18, color:C.accent, fontWeight:700, letterSpacing:"-0.02em",
                   textShadow:"0 0 20px rgba(0,229,204,0.5)",
-                }}>
-                  14.2ms
-                </div>
+                }}>14.2ms</div>
                 <div style={{ fontSize:11, color:C.textDim, marginTop:1 }}>avg. round-trip execution</div>
               </div>
             </div>
@@ -596,7 +734,6 @@ function LatencySection() {
               border:"1px solid rgba(255,255,255,0.05)",
               boxShadow:"inset 0 1px 0 rgba(255,255,255,0.025), 0 32px 80px rgba(0,0,0,0.45)",
             }}>
-              {/* Terminal header */}
               <div style={{
                 display:"flex", justifyContent:"space-between", alignItems:"center",
                 marginBottom:28, paddingBottom:16,
@@ -618,7 +755,6 @@ function LatencySection() {
                 </div>
               </div>
 
-              {/* Bars */}
               <div style={{ display:"flex", flexDirection:"column", gap:28 }}>
                 {bars.map((b, i) => (
                   <div key={i}>
@@ -630,18 +766,13 @@ function LatencySection() {
                         <div style={{ fontSize:12, color:C.text, fontWeight:600, marginBottom:2 }}>{b.label}</div>
                         <div className="font-mono" style={{ fontSize:10, color:C.textDim }}>{b.sub}</div>
                       </div>
-                      {/* Monospace neon latency value */}
                       <span className="font-mono" style={{
                         fontSize:14, fontWeight:700,
                         color: i === 2 ? C.accent : b.color,
                         letterSpacing:"-0.02em", textAlign:"right", minWidth:90, flexShrink:0,
-                        textShadow: i === 2
-                          ? "0 0 18px rgba(0,229,204,0.60)"
-                          : `0 0 12px ${b.glow}`,
+                        textShadow: i === 2 ? "0 0 18px rgba(0,229,204,0.60)" : `0 0 12px ${b.glow}`,
                       }}>{b.ms}</span>
                     </div>
-
-                    {/* Ultra-thin 4px track */}
                     <div style={{
                       position:"relative", height:4, borderRadius:2,
                       background:"rgba(255,255,255,0.03)", overflow:"visible",
@@ -653,7 +784,6 @@ function LatencySection() {
                         transformOrigin:"left",
                         animation:`bar-fill 1.6s cubic-bezier(.16,1,.3,1) ${i * 0.2}s both`,
                       }}>
-                        {/* Glowing end cap */}
                         <div style={{
                           position:"absolute", right:-3, top:"50%", transform:"translateY(-50%)",
                           width:9, height:9, borderRadius:"50%",
@@ -666,7 +796,6 @@ function LatencySection() {
                 ))}
               </div>
 
-              {/* Scale footer */}
               <div style={{
                 display:"flex", justifyContent:"space-between",
                 marginTop:22, paddingTop:16,
@@ -701,10 +830,7 @@ function LatencySection() {
             <span style={{ color:"rgba(255,255,255,0.1)", margin:"0 8px" }}>+</span>
             <span style={{ color:C.accentAlt }}>T<sub>exec</sub></span>
             <span style={{ color:"rgba(255,255,255,0.1)", margin:"0 10px" }}>&lt;</span>
-            <span style={{
-              color:C.accent, fontWeight:700,
-              textShadow:"0 0 22px rgba(0,229,204,0.4)",
-            }}>20ms</span>
+            <span style={{ color:C.accent, fontWeight:700, textShadow:"0 0 22px rgba(0,229,204,0.4)" }}>20ms</span>
           </div>
           <div style={{ display:"flex", justifyContent:"center", gap:40, marginTop:20, flexWrap:"wrap" }}>
             {[{v:"~2ms",n:"network hop"},{v:"~8ms",n:"risk checks"},{v:"~6ms",n:"order + confirm"}].map((t,i)=>(
@@ -721,162 +847,335 @@ function LatencySection() {
 }
 
 /* ─────────────────────────────────────────
-   SECTION 2 — The Mirroring Engine
-   Static elegant dashed connector. No moving dot.
+   ARCHITECTURE TOPOLOGY MAP — Section 2
+   Animated gradient packets flow L→C then C→R
 ───────────────────────────────────────── */
+
+function easeInOut(t: number) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+function ArchTopologyMap() {
+  const svgRef    = useRef<SVGSVGElement>(null);
+  // Packet A: Whale Wallets → Engine
+  const pktADot   = useRef<SVGCircleElement>(null);
+  const pktAGlow  = useRef<SVGCircleElement>(null);
+  // Packet B: Engine → User Portfolio (offset by half cycle)
+  const pktBDot   = useRef<SVGCircleElement>(null);
+  const pktBGlow  = useRef<SVGCircleElement>(null);
+  const rafId     = useRef(0);
+
+  useEffect(() => {
+    const PERIOD = 1500; // ms per one-way trip
+    let t0: number | null = null;
+
+    const frame = (ts: number) => {
+      if (!svgRef.current) { rafId.current = requestAnimationFrame(frame); return; }
+      if (!t0) t0 = ts;
+
+      const W   = svgRef.current.clientWidth  || 900;
+      const H   = svgRef.current.clientHeight || 200;
+      const yMid = H / 2;
+
+      const xL = W * 0.118;  // left node center
+      const xC = W * 0.500;  // center node center
+      const xR = W * 0.882;  // right node center
+
+      // Packet A: L → C
+      const tA  = ((ts - t0) % PERIOD) / PERIOD;
+      const xA  = xL + (xC - xL) * easeInOut(tA);
+      const opA = tA < 0.07 ? tA / 0.07 : tA > 0.93 ? (1 - tA) / 0.07 : 1;
+
+      // Packet B: C → R  (offset 50%)
+      const tB  = ((ts - t0 + PERIOD * 0.51) % PERIOD) / PERIOD;
+      const xB  = xC + (xR - xC) * easeInOut(tB);
+      const opB = tB < 0.07 ? tB / 0.07 : tB > 0.93 ? (1 - tB) / 0.07 : 1;
+
+      ([pktADot, pktAGlow] as typeof pktADot[]).forEach(r => {
+        if (!r.current) return;
+        r.current.setAttribute("cx", xA.toFixed(1));
+        r.current.setAttribute("cy", String(yMid));
+        r.current.setAttribute("opacity", opA.toFixed(3));
+      });
+      ([pktBDot, pktBGlow] as typeof pktBDot[]).forEach(r => {
+        if (!r.current) return;
+        r.current.setAttribute("cx", xB.toFixed(1));
+        r.current.setAttribute("cy", String(yMid));
+        r.current.setAttribute("opacity", opB.toFixed(3));
+      });
+
+      rafId.current = requestAnimationFrame(frame);
+    };
+
+    rafId.current = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId.current);
+  }, []);
+
+  return (
+    <div style={{ position:"relative" }}>
+
+      {/* SVG layer — sits between boxes via absolute positioning */}
+      <svg
+        ref={svgRef}
+        width="100%"
+        height="200"
+        style={{
+          position:"absolute", top:"50%", left:0,
+          transform:"translateY(-50%)",
+          overflow:"visible", pointerEvents:"none", zIndex:0,
+        }}
+      >
+        <defs>
+          <linearGradient id="segAC" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor={C.accent}    stopOpacity="0.45"/>
+            <stop offset="100%" stopColor={C.accentAlt} stopOpacity="0.45"/>
+          </linearGradient>
+          <linearGradient id="segCR" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"   stopColor={C.accentAlt}  stopOpacity="0.45"/>
+            <stop offset="100%" stopColor={C.accentPink} stopOpacity="0.45"/>
+          </linearGradient>
+          <filter id="gA" x="-300%" y="-300%" width="700%" height="700%">
+            <feGaussianBlur stdDeviation="6"/>
+          </filter>
+          <filter id="gB" x="-300%" y="-300%" width="700%" height="700%">
+            <feGaussianBlur stdDeviation="6"/>
+          </filter>
+        </defs>
+
+        {/* Track lines — static dashed */}
+        <line x1="13%" y1="50%" x2="44%" y2="50%"
+          stroke="url(#segAC)" strokeWidth="1.5" strokeDasharray="5 9"/>
+        <line x1="56%" y1="50%" x2="87%" y2="50%"
+          stroke="url(#segCR)" strokeWidth="1.5" strokeDasharray="5 9"/>
+
+        {/* Arrow chevrons */}
+        <polyline points="27%,44% 30%,50% 27%,56%"
+          fill="none" stroke="rgba(0,229,204,0.28)"
+          strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        <polyline points="70%,44% 73%,50% 70%,56%"
+          fill="none" stroke="rgba(124,92,252,0.28)"
+          strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+
+        {/* Packet A glow + dot */}
+        <circle ref={pktAGlow} r="11" fill={C.accent}    opacity="0" filter="url(#gA)"/>
+        <circle ref={pktADot}  r="4"  fill={C.accent}    opacity="0"/>
+
+        {/* Packet B glow + dot */}
+        <circle ref={pktBGlow} r="11" fill={C.accentAlt} opacity="0" filter="url(#gB)"/>
+        <circle ref={pktBDot}  r="4"  fill={C.accentAlt} opacity="0"/>
+      </svg>
+
+      {/* Three boxes row */}
+      <div className="arch-row" style={{
+        display:"flex", alignItems:"center",
+        gap:0, position:"relative", zIndex:1,
+      }}>
+
+        {/* LEFT — Whale Wallets */}
+        <ArchSideNode
+          icon={<Users size={20}/>}
+          color={C.accent}
+          label="Whale Wallets"
+          sublabel="1,200+ monitored"
+          items={["Real-time WSS feed", "On-chain events", "Signal filtering"]}
+          pulse
+        />
+
+        <div style={{ flex:1 }}/>
+
+        {/* CENTER — Core Engine */}
+        <ArchCenterNode/>
+
+        <div style={{ flex:1 }}/>
+
+        {/* RIGHT — User Portfolio */}
+        <ArchSideNode
+          icon={<TrendingUp size={20}/>}
+          color={C.accentPink}
+          label="User Portfolio"
+          sublabel="Your Polymarket account"
+          items={["Mirrored orders", "Live P&L tracking", "Risk-adjusted size"]}
+          pulse={false}
+        />
+      </div>
+
+      {/* Legend */}
+      <div style={{
+        display:"flex", justifyContent:"center", gap:28, marginTop:44, flexWrap:"wrap",
+      }}>
+        {[
+          { label:"Signal ingest",    color:C.accent    },
+          { label:"Engine processing",color:C.accentAlt },
+          { label:"Order placement",  color:C.accentPink},
+        ].map((l, i) => (
+          <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:22, height:2, borderRadius:1, background:l.color, opacity:0.55 }}/>
+            <span style={{ fontSize:11, color:C.textDim }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ArchSideNode({ icon, color, label, sublabel, items, pulse }: {
+  icon: React.ReactNode;
+  color: string;
+  label: string;
+  sublabel: string;
+  items: string[];
+  pulse: boolean;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        width:176, flexShrink:0, padding:"22px 18px", borderRadius:16, textAlign:"center",
+        background: hov ? `${color}08` : "#090f1e",
+        border:`1px solid ${hov ? `${color}28` : "rgba(255,255,255,0.06)"}`,
+        boxShadow: hov ? `0 0 40px ${color}10` : "none",
+        transform: hov ? "translateY(-4px)" : "translateY(0)",
+        transition:"all 0.3s cubic-bezier(.16,1,.3,1)",
+      }}
+    >
+      <div style={{ position:"relative", display:"inline-flex", marginBottom:14 }}>
+        <div style={{
+          width:46, height:46, borderRadius:12,
+          background:`${color}0a`, border:`1px solid ${color}1a`,
+          display:"flex", alignItems:"center", justifyContent:"center", color,
+        }}>{icon}</div>
+        {pulse && (
+          <div style={{
+            position:"absolute", inset:-7, borderRadius:18,
+            border:`1px solid ${color}`,
+            animation:"signal-ring 2.2s ease-out infinite",
+            pointerEvents:"none",
+          }}/>
+        )}
+      </div>
+
+      <div className="font-syne" style={{ fontSize:13, fontWeight:700, color:"#fff", marginBottom:3 }}>{label}</div>
+      <div style={{ fontSize:10, color:C.textDim, marginBottom:14 }}>{sublabel}</div>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{
+            fontSize:9, color, fontFamily:"JetBrains Mono, monospace", fontWeight:600,
+            padding:"4px 8px", borderRadius:6,
+            background:`${color}07`, border:`1px solid ${color}10`,
+            letterSpacing:"0.05em",
+          }}>{item}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ArchCenterNode() {
+  return (
+    <div style={{
+      width:248, flexShrink:0, padding:"28px 22px", borderRadius:20, textAlign:"center",
+      background:"linear-gradient(160deg,rgba(0,229,204,0.05) 0%,rgba(6,11,24,0.98) 55%,rgba(124,92,252,0.05) 100%)",
+      animation:"engine-glow 4s ease-in-out infinite",
+      position:"relative",
+    }}>
+      {/* Top gradient bar */}
+      <div style={{
+        position:"absolute", top:0, left:"18%", right:"18%", height:2,
+        background:"linear-gradient(90deg,transparent,#00e5cc80,#7c5cfc80,transparent)",
+        borderRadius:1,
+      }}/>
+
+      <div style={{ position:"relative", display:"inline-flex", marginBottom:16 }}>
+        <div style={{
+          width:58, height:58, borderRadius:16,
+          background:"linear-gradient(135deg,rgba(0,229,204,0.13),rgba(124,92,252,0.10))",
+          border:"1px solid rgba(0,229,204,0.22)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+        }}>
+          <Cpu size={26} color={C.accent}/>
+        </div>
+        <div style={{
+          position:"absolute", inset:-9, borderRadius:24,
+          border:"1px solid rgba(0,229,204,0.09)",
+          animation:"signal-ring 2.6s ease-out infinite",
+          pointerEvents:"none",
+        }}/>
+      </div>
+
+      <div className="font-syne" style={{
+        fontSize:14, fontWeight:800, color:"#fff", letterSpacing:"-0.02em", marginBottom:3,
+      }}>PolyWhale Core Engine</div>
+      <div className="font-mono" style={{
+        fontSize:9, color:C.accent, letterSpacing:"0.12em",
+        textTransform:"uppercase", marginBottom:18,
+      }}>EU-West 1 · Dublin</div>
+
+      {/* Metrics row */}
+      <div style={{
+        display:"flex", borderRadius:10, overflow:"hidden",
+        border:"1px solid rgba(255,255,255,0.05)", marginBottom:16,
+      }}>
+        {[{ v:"14.2ms", l:"latency"}, { v:"99.98%", l:"uptime"}].map((m, i) => (
+          <div key={i} style={{
+            flex:1, padding:"9px 6px", textAlign:"center",
+            background:"rgba(0,0,0,0.32)",
+            borderRight: i === 0 ? "1px solid rgba(255,255,255,0.04)" : "none",
+          }}>
+            <div className="font-mono" style={{ fontSize:13, fontWeight:700, color:C.accent }}>{m.v}</div>
+            <div style={{ fontSize:9, color:C.textDim, marginTop:2, textTransform:"uppercase", letterSpacing:"0.08em" }}>{m.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pipeline stage tags */}
+      {["Signal Parser","Risk Engine","Order Constructor"].map((s, i) => (
+        <div key={i} style={{
+          display:"flex", alignItems:"center", gap:8,
+          padding:"6px 10px", borderRadius:8, marginBottom:6,
+          background:"rgba(255,255,255,0.022)",
+          border:"1px solid rgba(255,255,255,0.04)",
+        }}>
+          <div style={{ width:5, height:5, borderRadius:"50%", background:C.accent, flexShrink:0, opacity:0.6 }}/>
+          <span className="font-mono" style={{ fontSize:9, color:C.textMuted, letterSpacing:"0.06em" }}>{s}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MirroringSection() {
   const ref = useReveal();
-  const [activeStep, setActiveStep] = useState<number | null>(null);
-
-  const steps = [
-    {
-      num:"01", icon:<Radio size={22}/>, color:C.accent,
-      title:"Whale Wallet Monitored",
-      desc:"1,200+ verified whale addresses tracked via Polymarket's real-time event stream. Signal captured the instant a position opens or shifts.",
-      tag:"~3ms detection",
-    },
-    {
-      num:"02", icon:<Activity size={22}/>, color:C.accentAlt,
-      title:"PolyWhale Engine",
-      desc:"Position sizing, risk limits, whale conviction scoring, and order construction resolved in a single non-blocking cycle from co-located EU-West 1 infrastructure.",
-      tag:"~8ms processing",
-    },
-    {
-      num:"03", icon:<Wallet size={22}/>, color:C.accentPink,
-      title:"Your Portfolio Executed",
-      desc:"Mirrored order fires directly to Polymarket's matching engine. Confirmed on-chain before most participants have registered the whale's move.",
-      tag:"~6ms placement",
-    },
-  ];
-
   return (
     <section style={{ padding:"100px 24px 140px" }}>
       <div ref={ref} className="rv" style={{ maxWidth:1000, margin:"0 auto" }}>
-        <SectionLabel num="02" text="The Mirroring Engine" color={C.accentAlt}/>
+        <SectionLabel num="02" text="Infrastructure Architecture" color={C.accentAlt}/>
 
-        <div style={{ marginBottom:52 }}>
+        <div style={{ marginBottom:56 }}>
           <h2 className="font-syne" style={{
             fontSize:"clamp(26px,3.5vw,40px)", fontWeight:800, color:"#fff",
             letterSpacing:"-0.03em", marginBottom:18, lineHeight:1.1,
           }}>
-            A{" "}<span style={{ color:C.accentAlt }}>Three-Stage</span>{" "}
-            Trade Pipeline
+            A{" "}<span style={{ color:C.accentAlt }}>Three-Node</span>{" "}
+            Trade Topology
           </h2>
-          <p style={{ fontSize:15, lineHeight:1.82, color:C.textMuted, maxWidth:520 }}>
-            Every mirrored trade flows through three deterministic stages, each operating
-            in sub-millisecond windows with no human bottleneck in the loop.
+          <p style={{ fontSize:15, lineHeight:1.82, color:C.textMuted, maxWidth:540 }}>
+            Every mirrored trade transits a deterministic three-node architecture —
+            whale signal feeds into the co-located engine, which fires an order
+            into your portfolio before the market moves.
           </p>
         </div>
 
-        {/* Pipeline wrapper */}
-        <div style={{ position:"relative", paddingTop:48 }}>
-
-          {/* Static elegant dashed connector — desktop only */}
-          <div className="pipeline-connector" style={{
-            position:"absolute", top:0, left:0, right:0, height:48,
-            pointerEvents:"none", zIndex:1,
-          }}>
-            <svg width="100%" height="48" style={{ overflow:"visible" }}>
-              {/* Left segment */}
-              <line x1="16.5%" y1="50%" x2="50%" y2="50%"
-                stroke="rgba(255,255,255,0.10)"
-                strokeWidth="1"
-                strokeDasharray="5 9"
-              />
-              {/* Right segment */}
-              <line x1="50%" y1="50%" x2="83.5%" y2="50%"
-                stroke="rgba(255,255,255,0.10)"
-                strokeWidth="1"
-                strokeDasharray="5 9"
-              />
-              {/* Static arrow chevrons */}
-              {([33, 67] as number[]).map((xPct, i) => (
-                <polyline key={i}
-                  points={`${xPct - 1.1}%,32 ${xPct + 1.4}%,50% ${xPct - 1.1}%,68%`}
-                  fill="none"
-                  stroke="rgba(255,255,255,0.14)"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              ))}
-            </svg>
-          </div>
-
-          {/* Step cards */}
-          <div className="pipeline-row" style={{ display:"flex", gap:20, position:"relative", zIndex:2 }}>
-            {steps.map((s, i) => {
-              const active = activeStep === i;
-              return (
-                <div
-                  key={i}
-                  onMouseEnter={() => setActiveStep(i)}
-                  onMouseLeave={() => setActiveStep(null)}
-                  style={{
-                    flex:1, padding:"30px 26px", borderRadius:18,
-                    background:"#0c1428",
-                    border:`1px solid ${active ? `${s.color}28` : "rgba(255,255,255,0.05)"}`,
-                    boxShadow: active
-                      ? `0 12px 40px ${s.color}10, inset 0 1px 0 rgba(255,255,255,0.03)`
-                      : "inset 0 1px 0 rgba(255,255,255,0.02)",
-                    transform: active ? "translateY(-4px)" : "translateY(0)",
-                    transition:"all 0.35s cubic-bezier(.16,1,.3,1)",
-                    cursor:"default", position:"relative",
-                  }}
-                >
-                  {/* Watermark number */}
-                  <div className="font-syne" style={{
-                    position:"absolute", top:14, right:18, fontSize:52, fontWeight:800,
-                    color:`${s.color}06`, lineHeight:1, userSelect:"none",
-                  }}>{s.num}</div>
-
-                  {/* Live signal dot — only visible on hover */}
-                  {active && (
-                    <div style={{
-                      position:"absolute", top:17, left:17,
-                      width:7, height:7, borderRadius:"50%", background:s.color,
-                    }}>
-                      <div style={{
-                        position:"absolute", inset:-4, borderRadius:"50%",
-                        border:`1.5px solid ${s.color}`,
-                        animation:"signal-ring 1.5s ease-out infinite",
-                      }}/>
-                    </div>
-                  )}
-
-                  <div style={{
-                    width:46, height:46, borderRadius:12,
-                    background:`${s.color}08`, border:`1px solid ${s.color}12`,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    color:s.color, marginBottom:20,
-                    transform: active ? "scale(1.08) rotate(-5deg)" : "scale(1)",
-                    transition:"all 0.35s cubic-bezier(.16,1,.3,1)",
-                  }}>
-                    {s.icon}
-                  </div>
-
-                  <h3 className="font-syne" style={{
-                    fontSize:16, fontWeight:700, color:"#fff",
-                    marginBottom:10, letterSpacing:"-0.02em",
-                  }}>{s.title}</h3>
-                  <p style={{ fontSize:13, lineHeight:1.76, color:C.textMuted, marginBottom:18 }}>{s.desc}</p>
-                  <span className="font-mono" style={{
-                    fontSize:10, color:s.color, fontWeight:700,
-                    padding:"4px 10px", borderRadius:6,
-                    background:`${s.color}07`, border:`1px solid ${s.color}10`,
-                  }}>{s.tag}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <ArchTopologyMap/>
       </div>
     </section>
   );
 }
 
 /* ─────────────────────────────────────────
-   SECTION 3 — Enterprise Security Dashboard
+   SECTION 3 — Enterprise Security
 ───────────────────────────────────────── */
 function SecuritySection() {
   const ref = useReveal();
@@ -918,7 +1217,6 @@ function SecuritySection() {
               infrastructure — only from the markets themselves.
             </p>
           </div>
-
           <div
             onMouseEnter={() => setShieldHov(true)}
             onMouseLeave={() => setShieldHov(false)}
@@ -939,14 +1237,13 @@ function SecuritySection() {
           </div>
         </div>
 
-        {/* Permission audit panels */}
+        {/* Permission panels */}
         <div className="perm-grid" style={{
           display:"grid", gridTemplateColumns:"1fr 1fr", gap:2,
           borderRadius:18, overflow:"hidden", marginBottom:44,
           border:"1px solid rgba(255,255,255,0.05)",
           boxShadow:"0 28px 80px rgba(0,0,0,0.45)",
         }}>
-          {/* Granted — dark with subtle green tint */}
           <div style={{
             padding:32,
             background:"linear-gradient(150deg,rgba(0,229,204,0.07) 0%,rgba(6,10,24,0.92) 100%)",
@@ -972,8 +1269,6 @@ function SecuritySection() {
               </div>
             ))}
           </div>
-
-          {/* Never Requested — dark with subtle pink tint */}
           <div style={{
             padding:32,
             background:"linear-gradient(150deg,rgba(244,114,182,0.07) 0%,rgba(6,10,24,0.92) 100%)",
@@ -1000,7 +1295,7 @@ function SecuritySection() {
           </div>
         </div>
 
-        {/* Trade-Only callout banner */}
+        {/* Trade-Only callout */}
         <div style={{
           padding:"20px 28px", borderRadius:14, marginBottom:44,
           background:"rgba(0,229,204,0.04)",
@@ -1029,7 +1324,7 @@ function SecuritySection() {
           </div>
         </div>
 
-        {/* Security detail cards */}
+        {/* Security cards */}
         <div className="sec-cards" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
           {cards.map((card, i) => {
             const [hov, setHov] = useState(false);
