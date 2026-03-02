@@ -604,7 +604,7 @@ function Hero() {
           <BrainCircuit size={13}/> The Science of Alpha
         </div>
 
-        {/* H1 — pure white, only "Sub-Second Execution" carries the gradient */}
+        {/* H1 — natural line break keeps "Sub-Second Execution" intact */}
         <h1 className="font-syne" style={{
           fontSize:"clamp(36px,5.2vw,62px)", fontWeight:800, color:"#fff",
           letterSpacing:"-0.04em", marginBottom:24, lineHeight:1.06,
@@ -615,8 +615,8 @@ function Hero() {
             WebkitBackgroundClip:"text",
             WebkitTextFillColor:"transparent",
             backgroundClip:"text",
-            whiteSpace:"nowrap",
-          }}>Sub-Second Execution</span>{" "}Wins Markets
+          }}>Sub-Second Execution</span>
+          <br />Wins Markets
         </h1>
 
         <p style={{
