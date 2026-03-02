@@ -937,7 +937,7 @@ function Hero(): React.JSX.Element {
             {[
               { val: "$48M+", label: "Volume Tracked" },
               { val: "1,200+", label: "Whales Indexed" },
-              { val: "<200ms", label: "Avg. Latency" },
+              { val: "<20ms", label: "Avg. Latency" },
             ].map((s, i) => (
               <div key={i}>
                 <div
